@@ -1,8 +1,16 @@
+<!--
+	Produced 2019
+	By https://github.com/amattu2
+	Copy Alec M.
+	License GNU Affero General Public License v3.0
+-->
+
 <html>
 	<head>
 		<title>ContextMenu Demo</title>
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 		<style>
+		/* For Demo */
 		HTML, body {
 			font-family: sans-serif;
 			margin: 0;
@@ -14,6 +22,7 @@
 			background: #f2f2f2;
 		}
 
+		/* Context Menu Design */
 		.context-menu {
 			position: fixed;
 			padding: 5px 0;
@@ -38,10 +47,6 @@
 
 		.context-menu-item:hover {
 			background: #f2f2f2;
-		}
-
-		.menu-item-text {
-
 		}
 
 		.menu-item-icon {
@@ -94,25 +99,25 @@
 		</style>
 	</head>
 	<body>
+		<!-- Title -->
 		<h1>Right click anywhere to test</h1>
 
+		<!-- Context Menu -->
 		<div class='context-menu' id='custom-context-menu'>
 			<div class='context-menu-item'>
 				<span class='menu-item-icon'>
 					<i class='material-icons'>open_in_new</i>
 				</span>
-				<span class='menu-item-text'>
-					Export
-				</span>
+				<span class='menu-item-text'>Export</span>
 			</div>
+
 			<div class='context-menu-line'></div>
+
 			<div class='context-menu-item'>
 				<span class='menu-item-icon'>
 					<i class='material-icons'>add</i>
 				</span>
-				<span class='menu-item-text'>
-					Add
-				</span>
+				<span class='menu-item-text'>Add</span>
 				<div class='menu-item-export'>
 					<span class='item-export-icon'>
 						<i class='material-icons'>keyboard_arrow_right</i>
@@ -169,24 +174,157 @@
 		</div>
 	</body>
 	<script>
+	// Events
+	document.documentElement.onclick = function(e) {
+		// Checks
+		if (!e.path || e.path.indexOf(document.getElementById('custom-context-menu')) >= 0) { return false }
+		if (!document.getElementById('custom-context-menu')) { return false }
+
+		// UI
+		document.getElementById('custom-context-menu').style.display = "none";
+		document.getElementById('custom-context-menu').innerHTML = '';
+	};
 	document.documentElement.oncontextmenu = function(e) {
 		// Checks
 		if (e.path.includes(document.getElementById('custom-context-menu'))) { e.preventDefault(); return false; }
 
 		// Variables
-		let div = document.getElementById('custom-context-menu');
-		let x = e.clientX;
-		let y = e.clientY;
+		let options = [
+			{
+				icon: "open_in_new",
+				text: "Export",
+				action: function() { console.log("Export") }
+			},
+			{
+				line: "1"
+			},
+			{
+				icon: "add",
+				text: "Add",
+				menu: [
+					{
+						icon: "person",
+						text: "Package",
+						action: function() { console.log("Add package") }
+					},
+					{
+						icon: "person",
+						text: "Part Line"
+					},
+					{
+						icon: "person",
+						text: "Part Line"
+					}
+				]
+			},
+			{
+				icon: "share",
+				text: "Share",
+				menu: [
+					{
+						icon: "person",
+						text: "Test User 1"
+					},
+					{
+						icon: "person",
+						text: "Test User 2"
+					},
+					{
+						icon: "person",
+						text: "Test User 3"
+					}
+				]
+			}
+		];
 
-		// Events
+		// Build Menu
 		e.preventDefault();
+		createContextMenu(e, document.getElementById('custom-context-menu'), options);
+	};
+
+	// Functions
+	function createContextMenu(event, parent, options = []) {
+		// Variables
+		let x = event.clientX;
+		let y = event.clientY;
+		let fragment = document.createDocumentFragment();
+
+		// Loops
+		options.forEach(function(d) {
+			// Checks
+			if (d.line == "1") {
+				fragment.appendChild(createMenuLine());
+			} else if (d.icon && d.text && !d.menu) {
+				fragment.appendChild(createMenuItem(d));
+			} else if (d.icon && d.text && d.menu) {
+				fragment.appendChild(createMenuMultiItem(d));
+			}
+		});
 
 		// UI
-		div.style.left = x + "px";
-		div.style.top = y + "px";
+		parent.innerHTML = "";
+		parent.appendChild(fragment);
+		parent.style.left = x + "px";
+		parent.style.top = y + "px";
+		parent.style.display = "block";
+	}
+	function createMenuLine() {
+		// Variables
+		let div = document.createElement('div');
 
-		// Debug
-		console.log(e);
-	};
+		// Attributes
+		div.classList.add('context-menu-line');
+
+		// Return
+		return div;
+	}
+	function createMenuItem(d) {
+		// Variables
+		let div = document.createElement('div');
+
+		// Attributes
+		div.classList.add('context-menu-item');
+		div.innerHTML = `<span class='menu-item-icon'><i class='material-icons'>${d.icon}</i></span><span class='menu-item-text'>${d.text}</span>`;
+		div.onclick = d.action && typeof(d.action) == "function" ? d.action : function() {};
+
+		// Return
+		return div;
+	}
+	function createMenuMultiItem(d) {
+		// Variables
+		let div = document.createElement('div');
+		let div2 = document.createElement('div');
+		let div3 = document.createElement('div');
+		let fragment = document.createDocumentFragment();
+
+		// Attributes
+		div.classList.add('context-menu-item');
+		div.innerHTML = `<span class='menu-item-icon'><i class='material-icons'>${d.icon}</i></span><span class='menu-item-text'>${d.text}</span>`;
+		div2.classList.add('menu-item-export');
+		div2.innerHTML = "<span class='item-export-icon'><i class='material-icons'>keyboard_arrow_right</i></span>"
+		div3.classList.add('item-exports');
+
+		// Loops
+		d.menu.forEach(function(e) {
+			// Variables
+			let div = document.createElement('div');
+
+			// Attributes
+			div.classList.add('context-menu-item');
+			div.innerHTML = `<span class='menu-item-icon'><i class='material-icons'>${e.icon}</i></span><span class='menu-item-text'>${e.text}</span>`;
+			div.onclick = e.action && typeof(e.action) == "function" ? e.action : function() {};
+
+			// Append
+			fragment.appendChild(div);
+		});
+
+		// Append
+		div3.appendChild(fragment);
+		div2.appendChild(div3);
+		div.appendChild(div2);
+
+		// Return
+		return div;
+	}
 	</script>
 </html>
